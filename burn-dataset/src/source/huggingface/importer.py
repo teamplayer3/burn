@@ -6,7 +6,7 @@ from sqlalchemy import Column, Integer, Table, create_engine, event, inspect
 from sqlalchemy.types import LargeBinary
 
 
-def download_and_export(name: str, subset: str, db_file: str, token: str, cache_dir: str):
+def download_and_export(name: str, subset: str, db_file: str, token: str, cache_dir: str, data_dir: str):
     """
     Download a dataset from using HuggingFace dataset and export it to a sqlite database.
     """
@@ -26,7 +26,7 @@ def download_and_export(name: str, subset: str, db_file: str, token: str, cache_
 
     # Load the dataset
     dataset_all = load_dataset(
-        name, subset, cache_dir=cache_dir, use_auth_token=token)
+        name, subset, cache_dir=cache_dir, use_auth_token=token, data_dir=data_dir)
 
     print(f"Dataset: {dataset_all}")
 
@@ -156,6 +156,9 @@ def parse_args():
     parser.add_argument(
         "--cache_dir", type=str, help="Cache directory", required=False, default=None
     )
+    parser.add_argument(
+        "--data_dir", type=str, help="Data directory to download in the dataset", required=False, default=None
+    )
 
     return parser.parse_args()
 
@@ -169,6 +172,7 @@ def run():
         args.file,
         args.token,
         args.cache_dir,
+        args.data_dir
     )
 
 

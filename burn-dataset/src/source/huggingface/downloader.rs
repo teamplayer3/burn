@@ -61,6 +61,7 @@ pub struct HuggingfaceDatasetLoader {
     name: String,
     subset: Option<String>,
     base_dir: Option<PathBuf>,
+    data_dir: Option<PathBuf>,
     huggingface_token: Option<String>,
     huggingface_cache_dir: Option<String>,
 }
@@ -72,6 +73,7 @@ impl HuggingfaceDatasetLoader {
             name: name.to_string(),
             subset: None,
             base_dir: None,
+            data_dir: None,
             huggingface_token: None,
             huggingface_cache_dir: None,
         }
@@ -92,6 +94,15 @@ impl HuggingfaceDatasetLoader {
     /// If not specified, the dataset will be stored in `~/.cache/burn-dataset`.
     pub fn with_base_dir(mut self, base_dir: &str) -> Self {
         self.base_dir = Some(base_dir.into());
+        self
+    }
+
+    /// Specify a data directory from which to download the dataset in the dataset
+    /// repository. Only this directory will be downloaded.
+    ///
+    /// If not specified, the whole repository will be downloaded.
+    pub fn with_data_dir(mut self, data_dir: &str) -> Self {
+        self.data_dir = Some(data_dir.into());
         self
     }
 
@@ -151,6 +162,7 @@ impl HuggingfaceDatasetLoader {
                 self.subset,
                 db_file.clone(),
                 base_dir,
+                self.data_dir,
                 self.huggingface_token,
                 self.huggingface_cache_dir,
             )?;
@@ -166,6 +178,7 @@ fn import(
     subset: Option<String>,
     base_file: PathBuf,
     base_dir: PathBuf,
+    data_dir: Option<PathBuf>,
     huggingface_token: Option<String>,
     huggingface_cache_dir: Option<String>,
 ) -> Result<(), ImporterError> {
@@ -194,6 +207,11 @@ fn import(
     if let Some(huggingface_cache_dir) = huggingface_cache_dir {
         command.arg("--cache_dir");
         command.arg(huggingface_cache_dir);
+    }
+
+    if let Some(data_dir) = data_dir {
+        command.arg("--data_dir");
+        command.arg(data_dir);
     }
 
     let mut handle = command.spawn().unwrap();
